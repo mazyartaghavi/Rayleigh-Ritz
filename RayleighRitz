@@ -1,0 +1,55 @@
+import numpy as np
+from scipy.integrate import quad
+from scipy.optimize import minimize
+
+def J(y):
+    # Define the integrand F(x, y, y')
+    def integrand(x):
+        # Define your specific F(x, y, y') function here
+        return F(x, y, np.gradient(y, x))
+
+    # Integrate the integrand over the desired range
+    integral, _ = quad(integrand, a, b)
+
+    return integral
+
+def constraint(y):
+    # Apply any necessary constraints on the solution
+    # Return an array of constraint values
+    return np.array([y(a) - c1, y(b) - c2])
+
+# Define the range [a, b] and the boundary conditions c1 and c2
+a = 0
+b = 1
+c1 = 0
+c2 = 1
+
+# Define the number of basis functions and their coefficients
+num_basis_functions = 10
+coefficients = np.ones(num_basis_functions)  # Initial guess for coefficients
+
+# Define the basis functions
+basis_functions = [lambda x, i=i: x**i for i in range(num_basis_functions)]
+
+# Define the trial solution using the basis functions and coefficients
+trial_solution = lambda x: sum(coefficients[i] * basis_functions[i](x) for i in range(num_basis_functions))
+
+# Define your specific F(x, y, y') function
+def F(x, y, y_prime):
+    # Define your specific F(x, y, y') function here
+    # This function should depend on x, y, and y_prime
+    return 0
+
+# Minimize the functional J(y) subject to the boundary conditions
+result = minimize(J, coefficients, constraints={'type': 'eq', 'fun': constraint})
+
+# Extract the optimized coefficients
+optimized_coefficients = result.x
+
+# Compute the final solution using the optimized coefficients
+final_solution = lambda x: sum(optimized_coefficients[i] * basis_functions[i](x) for i in range(num_basis_functions))
+
+# Test the final solution
+x_values = np.linspace(a, b, 100)
+y_values = final_solution(x_values)
+print(y_values)
